@@ -21,3 +21,18 @@ of objects and values in Javascript.
 
 This package was created because validation is a recurring need, and existing solutions at the time of development
 did not meet the author's standards for style, modularity, customizability, and extensibility.
+
+## TODO
+
+### Tests
+
+For defaults provided: (object, list, type-checkers)
+
+- different type than expected
+- null/undefined values
+- empty
+- single
+- normal
+- valid
+- invalid
+- nested
