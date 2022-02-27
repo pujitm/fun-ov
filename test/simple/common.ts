@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { resultIsError } from "../../lib/rules";
+
 /**
  * Asserts that the result of a validation check is erroneous
  * @param result
  */
 export const assertError = (result) => {
   expect(result).toBeDefined();
-  expect(result).toBeTruthy();
+  expect(resultIsError(result)).toBeTruthy();
 };
 
 /**

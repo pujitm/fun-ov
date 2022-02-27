@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // import { or } from "../../lib/ambiguous";
+import { createObjectValidator } from "../../lib/object";
 import {
-  createObjectValidator,
   checkIfString,
   checkIfObject,
   checkIfDefined,
