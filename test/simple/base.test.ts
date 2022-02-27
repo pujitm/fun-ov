@@ -23,14 +23,23 @@ import { assertError, assertValid } from "./common";
 
 describe("type checkers", () => {
   test("check if defined", () => {
-    [null, undefined].map(checkIfDefined).forEach(assertError);
+    [null, undefined, NaN].map(checkIfDefined).forEach(assertError);
 
-    // TODO Should NaN be considered undefined?
-    [{}, "", false, NaN, 0, []].map(checkIfDefined).forEach(assertValid);
+    [{}, "", false, 0, [], Infinity].map(checkIfDefined).forEach(assertValid);
   });
-  test("check if object", () => {
-    const results = [null, undefined, "", NaN, 1].map(checkIfObject);
-    results.forEach(assertError);
+  describe("check if object", () => {
+    test("identifies objects", () => {
+      [{}, [], new Map(), new Error()].map(checkIfObject).forEach(assertValid);
+    });
+
+    describe("returns error", () => {
+      test("for ill-defined values", () => {
+        [null, undefined, NaN].map(checkIfObject).forEach(assertError);
+      });
+      test("for non-objects", () => {
+        [0, Infinity, "", () => {}].map(checkIfObject).forEach(assertError);
+      });
+    });
   });
 });
 
