@@ -24,6 +24,12 @@ did not meet the author's standards for style, modularity, customizability, and 
 
 ## TODO
 
+Possible future features (vote in issue):
+
+- Support optional inversion of `resultIsError` and/or convenience lib (`checkIf<Type>`)
+- Inline Validation (ie `checkObject(validators, val)`)
+- Polymorphic Composition/Validation (`checkObject(validators)(val)` or `checkObject(validators, val)`)
+
 ### Tests
 
 For defaults provided: (object, list, type-checkers)
