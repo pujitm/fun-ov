@@ -16,49 +16,80 @@ import { validationEntryIsError } from "./object";
 import { resultIsError, Validator } from "./rules";
 import { checkIfObject } from "./simple";
 
-/**
- * Usage:
- *
- * 1. Create a list validator function:
- * ```ts
- * const validateCart = checkList(checkCartItem);
- * const errors = validateCart(items);
- * ```
- *
- * 2. Validate a list
- * ```ts
- * const errors = checkList(checkCartItem, items)
- * if (errors) {
- *      // do something
- * }
- * ```
- * @param validator
- * @param list
- * @returns (with list) object mapping indices to errors at them, (without list) a list validator function
- */
-export function checkList<Type>(validator: Validator<Type>, list?: Type[]) {
-  // Act as curry/composer if no list is given
-  if (!list) return (futureList: Type[]) => checkList(validator, futureList);
-  if (checkIfObject(list)) return checkIfObject(list);
+// TODO add explicit return types to exposed api
+// at least the convenience lib funcs like checkIfObject (so ts has something better than unknown)
+// remember, strings are returned if initial type checks are erroneous
+type ErrorsInList = Record<number, unknown>;
 
-  // TODO document passing of index and entire list (if that is desired behavior)
-  const results = list.map(validator);
-  if (results.some(resultIsError)) {
-    const errors = Object.entries(results).filter(validationEntryIsError);
-    return Object.fromEntries(errors);
-  }
+/**
+ * Returns a function that:
+ *
+ * Takes a list and validates every element with `validator`.
+ *
+ * Note: `validator` will have access to 2 additional parameters:
+ * element index (number) & the entire array (Type[])
+ *
+ * Example - set up type validators to use at runtime:
+ * ```ts
+ * const validateCart = createListChecker(validateCartItem);
+ * const validateDynamicList = createListChecker(or(checkIfString, checkIfNumber, customCheck));
+ * const checkBoundedValues = createListChecker(and(checkIfNumber, (item, index, list) => {
+ *    if (item > list.length) return `exceeds limit ${list.length}`
+ *    if (item < index) return `lower than limit ${index}`
+ * }));
+ * ```
+ * Often used with @see createObjectValidator to validate list/array fields
+ * @param validator
+ * @returns `undefined` if no errors. Else, object [key, value] -> [index of erroneous element, error from validator]
+ */
+export function createListChecker<Type>(validator: Validator<Type>) {
+  return (list: Type[]) => checkList(validator, list);
 }
+
+/**
+ * Ensures list is a defined object. Then validates every list element with validator
+ *
+ * @param validateElement has access to element `index` and entire `list` as 2nd and 3rd parameters
+ * @param list
+ * @returns (if error) object mapping indices to errors at them
+ */
+function checkList<Type>(validateElement: Validator<Type>, list: Type[]) {
+  if (checkIfObject(list)) return checkIfObject(list); // lists are objects in javascript
+
+  const results = list.map(validateElement);
+  return getErrors(results);
+}
+
+// TODO checkMap? include why use map over object
 
 export type GenericTuple = [...unknown[]];
 
-// export function checkTuple<Type extends GenericTuple>(
-//   validators: Validator[],
-//   tuple?: Type
-// ) {
-//   if (!tuple) return (futureTuple: Type) => checkTuple(validators, futureTuple);
-//   if (checkIfObject(tuple)) return checkIfObject(tuple);
+// TODO
+export function createTupleChecker(validatorTuple) {}
 
-//   tuple.forEach((input, index) => {
-//       const validator
-//   })
-// }
+function checkTuple<Tuple extends GenericTuple>(
+  validators: Validator[],
+  tuple: Tuple
+) {
+  if (checkIfObject(tuple)) return checkIfObject(tuple); // tuples appear as lists, which are objects in javascript
+  if (validators.length !== tuple.length)
+    return `expected tuple of ${validators.length} elements, got tuple of ${tuple.length}`;
+
+  const results = tuple.map((input, index) => validators[index](input));
+  return getErrors(results);
+}
+
+/**
+ * Returns any errors from `results` in object form.
+ * @param results list of results from validation checks
+ * @returns If error in `results`: object [key, value] -> [index of error, error]. Else, undefined.
+ */
+function getErrors(results: (unknown | undefined)[]): ErrorsInList {
+  if (results.some(resultIsError)) {
+    const errors = Object.entries(results).filter(validationEntryIsError);
+    // It would be simpler to return the entire list of results, but
+    // it's redundant, verbose, and expensive (ie. larger lists - imagine logging or printing all of that dead/useless data).
+    // Unmapped entries are implicitly valid
+    return Object.fromEntries(errors);
+  }
+}

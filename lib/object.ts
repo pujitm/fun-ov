@@ -119,10 +119,11 @@ function validateObject<Type>(
 ) {
   if (checkIfObject(input)) return checkIfObject(input); // Only tests objects. Catches undefined values
 
-  const { validateKey } = getHelpers(input, validators);
+  const validateKey = makeKeyValidator(input, validators);
   const results = Object.keys(validators).map(validateKey);
   const errors = results.filter(validationEntryIsError);
-  return errors.length === 0 ? undefined : Object.fromEntries(errors);
+
+  if (errors.length > 0) return Object.fromEntries(errors);
 }
 
 /**
@@ -134,21 +135,19 @@ function validateObject<Type>(
 export const validationEntryIsError = ([key, value]: [string, unknown]) =>
   resultIsError(value);
 
-function getHelpers<Type>(
+/**
+ * Returns a function that validates the value (in `obj`) of the given key, using the corresponding validator in `validators`:
+ * @param key
+ * @returns An object entry, [key, error]: [string, undefined (no errors) | unknown (there were validation errors)]
+ */
+function makeKeyValidator<Type>(
   obj: Type,
   validators: Record<keyof Required<Type>, Validator>
 ) {
-  return {
-    /**
-     * Validates the value (in `obj`) of the given key, using the corresponding validator in `validators`.
-     * @param key
-     * @returns An object entry, [key, error]: [string, undefined (no errors) | unknown (there were validation errors)]
-     */
-    validateKey: function (key: string): [string, undefined | unknown] {
-      const defaultValidator = () => {}; // void validator => no errors, used when no corresponding validator is found for the key
-      const validator = validators[key] ?? defaultValidator;
-      const valueToTest = obj[key];
-      return [key, validator(valueToTest, obj)]; // Pass in entire obj as second param for co-dependency validation
-    },
+  return function (key: string): [string, undefined | unknown] {
+    const defaultValidator = () => {}; // void validator => no errors, used when no corresponding validator is found for the key
+    const validate = validators[key] ?? defaultValidator;
+    const valueToTest = obj[key];
+    return [key, validate(valueToTest, obj)]; // Pass in entire obj as second param for co-dependency validation
   };
 }
