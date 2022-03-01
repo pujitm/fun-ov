@@ -64,8 +64,16 @@ function checkList<Type>(validateElement: Validator<Type>, list: Type[]) {
 
 export type GenericTuple = [...unknown[]];
 
-// TODO
-export function createTupleChecker(validatorTuple) {}
+/**
+ * Returns a tuple validator that:
+ * 
+ * TODO document usage
+ * @param validators validators for each element in tuple
+ * @returns 
+ */
+export function createTupleChecker<TupleType extends GenericTuple>(...validators: Validator[]) {
+  return (tuple: TupleType) => checkTuple(validators,tuple)
+}
 
 function checkTuple<Tuple extends GenericTuple>(
   validators: Validator[],
