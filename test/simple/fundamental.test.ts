@@ -15,45 +15,103 @@
 /** Test fundamental library components */
 
 import { and, or } from "../../lib/combinators";
-import { checkIfDefined, checkIfObject, checkIfString } from "../../lib/simple";
+import * as Lib from "../../lib/simple";
 import { assertError, assertValid } from "./common";
 
-describe("type checkers", () => {
-  test("check if defined", () => {
-    [null, undefined, NaN].map(checkIfDefined).forEach(assertError);
+type ValidationResult = "error" | "valid";
+type Cases = Record<ValidationResult, unknown[]>;
+type LibTest = Record<keyof typeof Lib, Cases>; // Ensure coverage
 
-    [{}, "", false, 0, [], Infinity].map(checkIfDefined).forEach(assertValid);
-  });
-  describe("check if object", () => {
-    test("identifies objects", () => {
-      [{}, [], new Map(), new Error()].map(checkIfObject).forEach(assertValid);
+const flatten = (obj: Object) => Object.values(obj).flat();
+
+const values = {
+  /** An arbitrary function */
+  func: console.log,
+  string: "",
+  symbol: Symbol(),
+  numbers: [Number.MAX_VALUE, Number.MIN_VALUE, 0, Infinity, -Infinity],
+  bigint: 1n,
+  booleans: [true, false],
+  objects: [{}, [], new Map(), new Error()],
+};
+
+const { objects, ...nonObjects } = values;
+const { func, ...nonFunctions } = values;
+const { string, ...nonStrings } = values;
+const { symbol, ...nonSymbols } = values;
+const { numbers, ...nonNumbers } = values;
+const { booleans, ...nonBooleans } = values;
+const { bigint, ...nonBigInts } = values;
+
+/** well-defined values of every primitive type */
+const definedVals = flatten(values);
+/** values considered ill-defined */
+const illDefinedVals = [null, undefined, NaN];
+
+const makeError = (nonTypes: Object) => [
+  ...illDefinedVals,
+  ...flatten(nonTypes),
+];
+
+const tests: LibTest = {
+  checkIfUndefined: { error: [...definedVals, null, NaN], valid: [undefined] },
+  checkIfDefined: { error: illDefinedVals, valid: definedVals },
+  checkIfIllDefined: { valid: illDefinedVals, error: definedVals },
+  checkIfString: {
+    error: makeError(nonStrings),
+    valid: ["", typeof undefined],
+  },
+  checkIfFunction: {
+    error: makeError(nonFunctions),
+    valid: [func],
+  },
+  checkIfNumber: {
+    error: [...flatten(nonNumbers), null, undefined],
+    valid: numbers,
+  },
+  checkIfSymbol: {
+    error: makeError(nonSymbols),
+    valid: [symbol],
+  },
+  checkIfBigInt: {
+    error: makeError(nonBigInts),
+    valid: [bigint],
+  },
+  checkIfBoolean: {
+    error: makeError(nonBooleans),
+    valid: booleans,
+  },
+  checkIfObject: {
+    error: makeError(nonObjects),
+    valid: objects,
+  },
+};
+
+Object.entries(tests).forEach(([checkName, cases]) => {
+  describe(checkName, () => {
+    test("identifies erroneous input", () => {
+      cases.error.map(Lib[checkName]).forEach(assertError);
     });
-
-    describe("returns error", () => {
-      test("for ill-defined values", () => {
-        [null, undefined, NaN].map(checkIfObject).forEach(assertError);
-      });
-      test("for non-objects", () => {
-        [0, Infinity, "", () => {}].map(checkIfObject).forEach(assertError);
-      });
+    test("identifies valid input", () => {
+      cases.valid.map(Lib[checkName]).forEach(assertValid);
     });
   });
 });
 
-describe("logical operators", () => {
-  test("and validator", () => {
-    // TODO make value equator check ie. (i) => i === "hi"
-    const validator = and(checkIfDefined, (input) =>
-      input === "hi" ? undefined : `expected 'hi', got ${JSON.stringify(input)}`
-    );
-    [null, undefined, {}, "", "HI"].map(validator).forEach(assertError);
-    assertValid(validator("hi"));
-  });
+// describe("logical operators", () => {
+//   test("and validator", () => {
+//     // TODO make value equator check ie. (i) => i === "hi"
+//     const validator = and(checkIfDefined, (input) =>
+//       input === "hi" ? undefined : `expected 'hi', got ${JSON.stringify(input)}`
+//     );
+//     [null, undefined, {}, "", "HI"].map(validator).forEach(assertError);
+//     assertValid(validator("hi"));
+//   });
 
-  test("or validator", () => {
-    // TODO make value equator check ie. (i) => i === "hi"
-    const validator = or(checkIfString, checkIfObject);
-    [null, undefined, NaN, 0, 1].map(validator).forEach(assertError);
-    [{}, "", "HI", [], { hi: "" }, ["hi"]].map(validator).forEach(assertValid);
-  });
-});
+//   test("or validator", () => {
+//     // TODO make value equator check ie. (i) => i === "hi"
+//     const validator = or(checkIfString, checkIfObject);
+//     [null, undefined, NaN, 0, 1].map(validator).forEach(assertError);
+//     [{}, "", "HI", [], { hi: "" }, ["hi"]].map(validator).forEach(assertValid);
+//   });
+// });
