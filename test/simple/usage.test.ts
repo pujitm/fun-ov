@@ -15,13 +15,7 @@
 // Usage test
 
 import { createObjectValidator } from "../../lib/object";
-import {
-  checkIfString,
-  checkIfObject,
-  checkIfDefined,
-  and,
-  or,
-} from "../../lib/simple";
+import { checkIfString, checkIfObject, checkIfDefined } from "../../lib/simple";
 import { assertError } from "./common";
 
 interface Account {

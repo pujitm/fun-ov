@@ -30,6 +30,10 @@ Possible future features (vote in issue):
 - Inline Validation (ie `checkObject(validators, val)`)
 - Polymorphic Composition/Validation (`checkObject(validators)(val)` or `checkObject(validators, val)`)
 
+Possible API changes:
+
+- `checkMap` - excluded because keys/values can be validated before insertion
+
 ### Tests
 
 For defaults provided: (object, list, type-checkers)

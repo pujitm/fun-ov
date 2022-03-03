@@ -12,15 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Lib Test
+/** Test fundamental library components */
 
-import {
-  checkIfDefined,
-  checkIfObject,
-  checkIfString,
-  or,
-  and,
-} from "../../lib/simple";
+import { and, or } from "../../lib/combinators";
+import { checkIfDefined, checkIfObject, checkIfString } from "../../lib/simple";
 import { assertError, assertValid } from "./common";
 
 describe("type checkers", () => {
