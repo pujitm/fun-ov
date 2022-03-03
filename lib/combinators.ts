@@ -1,24 +1,53 @@
-import { Validator } from "./rules";
+import { resultIsError, Validator } from "./rules";
 
-// eager vs lazy
+type ErrorMaker<ErrorType = unknown[]> = (
+  results: unknown[],
+  errors: unknown[]
+) => ErrorType;
+
+function makeEagerCombinator(makeError: ErrorMaker) {
+  return (...validators: Validator[]): Validator => {
+    return (...validationParams) => {
+      const results = validators.map((check) => check(...validationParams));
+      const errors = results.filter(resultIsError);
+      return makeError(results, errors);
+    };
+  };
+}
+
+export const EagerAnd = makeEagerCombinator((_, errors) => {
+  if (errors.length > 0) {
+    return errors;
+  }
+});
+
+export const EagerOr = makeEagerCombinator((results, errors) => {
+  if (errors.length === results.length) {
+    // No check succeeded
+    return errors;
+  }
+});
+
 export function and(...validators: Validator[]): Validator {
-  return (value, ...additionalInfo): undefined | unknown[] => {
-    const results = validators.map((check) => check(value, ...additionalInfo));
-    // Erroneous results must be truthy, so keep truthy results
-    const errors = results.filter((err) => err);
-    if (errors.length > 0) {
-      return errors;
+  return (...validationParams): unknown => {
+    for (const check of validators) {
+      const result = check(...validationParams);
+      if (resultIsError(result)) return result;
     }
   };
 }
 
 export function or(...validators: Validator[]): Validator {
-  return (value, ...additionalInfo): undefined | unknown[] => {
-    const results = validators.map((check) => check(value, ...additionalInfo));
-    const errors = results.filter((err) => err);
-    if (errors.length === results.length) {
-      // No check succeeded
-      return errors;
+  return (...validationParams): unknown[] => {
+    const errors = [];
+    for (const check of validators) {
+      const result = check(...validationParams);
+      if (!resultIsError(result)) return;
+      else errors.push(result);
     }
+    return errors;
   };
 }
+
+// TODO implement `optional` -> maybe in another file/module? (optional = or(checkIfUndefined, validator))
+// and vs all, or vs any. Capitalization.

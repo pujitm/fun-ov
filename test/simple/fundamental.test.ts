@@ -66,7 +66,7 @@ const tests: LibTest = {
     valid: [func],
   },
   checkIfNumber: {
-    error: [...flatten(nonNumbers), null, undefined],
+    error: makeError(nonNumbers),
     valid: numbers,
   },
   checkIfSymbol: {
@@ -98,20 +98,25 @@ Object.entries(tests).forEach(([checkName, cases]) => {
   });
 });
 
-// describe("logical operators", () => {
-//   test("and validator", () => {
-//     // TODO make value equator check ie. (i) => i === "hi"
-//     const validator = and(checkIfDefined, (input) =>
-//       input === "hi" ? undefined : `expected 'hi', got ${JSON.stringify(input)}`
-//     );
-//     [null, undefined, {}, "", "HI"].map(validator).forEach(assertError);
-//     assertValid(validator("hi"));
-//   });
+describe("logical operators", () => {
+  // TODO Eager, lazy
+  // TODO pass additional params through
+  // TODO Logic tests - truth table
+  // deliberately not implementing 'not' for clearer combination logic, clarity over concision
+  // technically, logical combinators are fundamentals, and type checks are built on top of them
+  test("and validator", () => {
+    // TODO make value equator check ie. (i) => i === "hi"
+    const validator = and(Lib.checkIfDefined, (input) =>
+      input === "hi" ? undefined : `expected 'hi', got ${JSON.stringify(input)}`
+    );
+    [null, undefined, {}, "", "HI"].map(validator).forEach(assertError);
+    assertValid(validator("hi"));
+  });
 
-//   test("or validator", () => {
-//     // TODO make value equator check ie. (i) => i === "hi"
-//     const validator = or(checkIfString, checkIfObject);
-//     [null, undefined, NaN, 0, 1].map(validator).forEach(assertError);
-//     [{}, "", "HI", [], { hi: "" }, ["hi"]].map(validator).forEach(assertValid);
-//   });
-// });
+  test("or validator", () => {
+    // TODO make value equator check ie. (i) => i === "hi"
+    const validator = or(Lib.checkIfString, Lib.checkIfObject);
+    [null, undefined, NaN, 0, 1].map(validator).forEach(assertError);
+    [{}, "", "HI", [], { hi: "" }, ["hi"]].map(validator).forEach(assertValid);
+  });
+});
