@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/** Validation for lists and list-like structures (tuples) */
+
 import { validationEntryIsError } from "./object";
 import { resultIsError, Validator } from "./rules";
 import { checkIfObject } from "./simple";
@@ -59,8 +61,6 @@ function checkList<Type>(validateElement: Validator<Type>, list: Type[]) {
   const results = list.map(validateElement);
   return getErrors(results);
 }
-
-// TODO checkMap? include why use map over object
 
 export type GenericTuple = [...unknown[]];
 
