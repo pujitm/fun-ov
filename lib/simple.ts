@@ -66,6 +66,8 @@ export const checkIfIllDefined = (value) => {
     try {
       return `expected ill-defined value, got ${value}`;
     } catch (castError) {
+      // Input value may be something that can't implicitly turn into a string
+      // ie. symbol, or more likely, bigint
       return `expected ill-defined value, got ${typeof value}`;
     }
   }
