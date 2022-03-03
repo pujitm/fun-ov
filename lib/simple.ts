@@ -62,7 +62,13 @@ export const checkIfDefined = (value) => {
  */
 export const checkIfIllDefined = (value) => {
   const err = checkIfDefined(value);
-  if (!err) return `expected ill-defined value, got ${value}!`;
+  if (!err) {
+    try {
+      return `expected ill-defined value, got ${value}`;
+    } catch (castError) {
+      return `expected ill-defined value, got ${typeof value}`;
+    }
+  }
 };
 
 /**
@@ -91,7 +97,7 @@ export const checkIfFunction = makeTypeChecker("function");
  * @param input
  * @returns string, if `input` is not of the expected type
  */
-export const checkIfNumber = makeTypeChecker("number");
+export const checkIfNumber = and(checkIfDefined, makeTypeChecker("number"));
 /**
  * Checks whether `typeof input` is [`symbol`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#symbol_type)
  *
