@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { and } from "./combinators";
+import { resultIsError } from "./rules";
 
 // list, types, logical combos
 // should export checks for all primitive types listed at
@@ -61,8 +62,9 @@ export const checkIfDefined = (value) => {
  * @returns string if value is not undefined, null, or NaN
  */
 export const checkIfIllDefined = (value) => {
-  const err = checkIfDefined(value);
-  if (!err) {
+  // Inverse of checkIfDefined
+  const result = checkIfDefined(value); // should be erroneous
+  if (!resultIsError(result)) {
     try {
       return `expected ill-defined value, got ${value}`;
     } catch (castError) {
@@ -99,7 +101,7 @@ export const checkIfFunction = makeTypeChecker("function");
  * @param input
  * @returns string, if `input` is not of the expected type
  */
-export const checkIfNumber = and(checkIfDefined, makeTypeChecker("number"));
+export const checkIfNumber = and(checkIfDefined, makeTypeChecker("number")); // checkIfDefined to invalidate NaN
 /**
  * Checks whether `typeof input` is [`symbol`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#symbol_type)
  *
@@ -137,4 +139,4 @@ export const checkIfBoolean = makeTypeChecker("boolean");
  * @param input
  * @returns string, if `input` is not of the expected type
  */
-export const checkIfObject = and(checkIfDefined, makeTypeChecker("object"));
+export const checkIfObject = and(checkIfDefined, makeTypeChecker("object")); // checkIfDefined to invalidate null
