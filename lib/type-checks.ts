@@ -126,7 +126,7 @@ export const checkIfBigInt = makeTypeChecker("bigint");
  */
 export const checkIfBoolean = makeTypeChecker("boolean");
 /**
- * Checks whether `typeof input` is `object`
+ * Checks whether `typeof input` is `object`. `null` is not considered valid.
  *
  * From [MDN docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects):
  * In JavaScript, objects can be seen as a collection of properties.
@@ -135,7 +135,7 @@ export const checkIfBoolean = makeTypeChecker("boolean");
  *
  * Properties are identified using key values. A key value is either a String value or a Symbol value.
  *
- * Note: used in fun-ov data structure validators, like @see createObjectValidator & @see createListChecker
+ * Note: used in fun-ov data structure validators, like @see makeObjectChecker & @see makeListChecker
  * @param input
  * @returns string, if `input` is not of the expected type
  */

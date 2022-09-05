@@ -14,38 +14,41 @@
 
 /** For belabored proof of functionality/regression checks */
 
-import { createObjectValidator } from "../../lib/object";
-import { checkIfString } from "../../lib/simple";
+import { makeListChecker, makeTupleChecker } from "../../lib/list";
+import { makeObjectChecker } from "../../lib/object";
+import { checkIfString } from "../../lib/type-checks";
 import { assertError, assertValid } from "../common";
 
 interface Account {
   id: string;
 }
-interface Company {
+
+const checkID = (id: string) => {
+  let err = checkIfString(id); // can also use `and(checkIfString, ...)`, but types are ambiguous (currently)
+  if (err) return err;
+
+  // ACH regex from https://stackoverflow.com/a/1787814/6656631
+  const tester = /^\w{1,17}$/;
+  if (!tester.test(id))
+    return `Expected 1-17 character alphanumeric. Got ${id}`;
+};
+
+interface Person {
   name: string;
   bank_account: Account;
 }
 
-describe("handles nested objects", () => {
-  const checkID = (id: string) => {
-    let err = checkIfString(id); // can also use `and(checkIfString, ...)`, but types are ambiguous (currently)
-    if (err) return err;
+const validatePerson = makeObjectChecker<Person>({
+  name: checkIfString,
+  bank_account: makeObjectChecker<Account>({ id: checkID }),
+});
 
-    // ACH regex from https://stackoverflow.com/a/1787814/6656631
-    const tester = /^\w{1,17}$/;
-    if (!tester.test(id))
-      return `Expected 1-17 character alphanumeric. Got ${id}`;
-  };
+const checkPeople = makeListChecker(validatePerson);
 
-  const validateCompany = createObjectValidator<Company>({
-    name: checkIfString, // Should be length greater than 0
-    bank_account: createObjectValidator<Account>({ id: checkID }),
-  });
-
-  const testCases = (assertor, cases: unknown[]) =>
-    cases.map(validateCompany).forEach(assertor);
+describe("handles nested objects & lists", () => {
+  const testCases = (assertor, cases) => assertor(checkPeople(cases));
   test("recognizes valid results", () => {
-    const cases: Company[] = [
+    const cases: Person[] = [
       {
         name: "hi",
         bank_account: { id: "iii" },
@@ -68,8 +71,8 @@ describe("handles nested objects", () => {
       {
         name: "fun-ov",
         bank_account: { id: "1234", created: 144785, balance: 2 },
-        ein: "an ein",
-        incorporated: new Date(),
+        ssn: "an ssn",
+        born: new Date(),
         status: "delinquent",
         comments: ["nXhb", "wee3kfjmG"],
       },
@@ -148,5 +151,33 @@ describe("handles nested objects", () => {
         bank_account: { ID: "1234" },
       },
     ]);
+  });
+  describe("tuples", () => {
+    const makeCheckers = () => ({
+      pass: jest.fn(),
+      fail: jest.fn(() => "an error"),
+    });
+    test("all pass", () => {
+      const { pass } = makeCheckers();
+      const c = makeTupleChecker(pass, pass, pass);
+      assertValid(c([1, 2, 3]));
+    });
+    test("need same elements to pass", () => {
+      const { pass } = makeCheckers();
+      const c = makeTupleChecker(pass, pass, pass);
+      // NOTE: You can/should give makeTupleChecker a type parameter like
+      // makeTupleChecker<[number, number, number]>
+      // and typescript will catch this error.
+      assertError(c([1, 2]));
+      assertError(c([1, 2, 3, 4])); // TODO should this behavior (tuples of bigger-than-expected sizes) be ok?
+      assertError(c([]));
+    });
+    test("failure is indexed and non-blocking", () => {
+      const { pass, fail } = makeCheckers();
+      const c = makeTupleChecker(pass, fail, pass);
+      const err = c([1, 2, 3]);
+      assertError(err[1]);
+      expect(pass).toBeCalledTimes(2); // tuple check, like objects, should be eager
+    });
   });
 });

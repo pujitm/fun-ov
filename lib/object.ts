@@ -13,14 +13,19 @@
 // limitations under the License.
 
 import { resultIsError, Validator } from "./rules";
-import { checkIfObject } from "./simple";
+import { checkIfObject } from "./type-checks";
+
+// ─── Meta ───────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────
+
+// Naming: make___Checker over create___Validator to save characters & syllables. More clear too.
 
 // Keeping this API (1. create -> 2. validate) because:
 // 1. Easier to maintain backwards compatibility
 // 2. Clearer than polymorphic alternative (use validateObject for composition and action)
 // Drawbacks of verbosity/inelegance are worth it.
 //
-// Polymorphic approach would look like (checkList function)
+// Polymorphic approach (checkList function) would allow both uses:
 //
 //   1. Create a list validator function:
 //   ```ts
@@ -35,6 +40,10 @@ import { checkIfObject } from "./simple";
 //        // do something
 //   }
 //   ```
+// I could see it being confusing (when/why to use one over the other).
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────── End Meta ─────
 
 /**
  * Compose validators of object members to validate the object itself.
@@ -50,7 +59,7 @@ import { checkIfObject } from "./simple";
  * type CommentParams = { body: string };
  * // The type parameter ensures each key has a validator (to keep validators up-to-date with code changes)
  * // You can provide type parameters to individual component validators for even stronger type checking
- * const validateCommentParams = createObjectValidator<CommentParams>({ body: checkIfString });
+ * const validateCommentParams = makeObjectChecker<CommentParams>({ body: checkIfString });
  *
  * export interface ExpectedAPIRequest {
  *    target: string; // an id string
@@ -58,7 +67,7 @@ import { checkIfObject } from "./simple";
  *    params?: CommentParams;
  * }
  *
- * const checkAction = or(strEquals('like'), strEquals('comment'), strEquals('subscribe'));
+ * const checkAction = or(is('like'), is('comment'), is('subscribe'));
  * const checkParams = (params: CommentParams, requestObject: ExpectedAPIRequest) => {
  *    // ignore field if action is like or subscribe
  *    // b/c they only need the target id to perform their action
@@ -67,7 +76,7 @@ import { checkIfObject } from "./simple";
  *    }
  * };
  *
- * export const validateAPIRequest = createObjectValidator<ExpectedAPIRequest>({
+ * export const validateAPIRequest = makeObjectChecker<ExpectedAPIRequest>({
  *    target: checkIfString,
  *    action: checkAction,
  *    params: optional(checkParams),
@@ -88,7 +97,7 @@ import { checkIfObject } from "./simple";
  * @param validators validators for each key in `Type`
  * @returns `Validator<Type>` - single/unified validator for an object of `Type`
  */
-export function createObjectValidator<Type>(
+export function makeObjectChecker<Type>(
   validators: Record<keyof Required<Type>, Validator>
 ): Validator<Type> {
   return (obj: Type) => validateObject(obj, validators);
@@ -98,10 +107,10 @@ export function createObjectValidator<Type>(
  * Ensures input is a defined object. Then uses validators to validate input object.
  *
  * Not exported/exposed b/c I couldn't think of a use-case where it would be
- * clearly and distinctly preferable to @see createObjectValidator and I wanted to avoid
+ * clearly and distinctly preferable to @see makeObjectChecker and I wanted to avoid
  * causing confusion/ambiguity of use.
  *
- * It can also be reached/recreated via `createObjectValidator(validators)(input);`
+ * It can also be reached/recreated via `makeObjectChecker(validators)(input);`
  * The trade between concision and clarity seems worth it.
  *
  * It may be helpful where validators aren't known ahead of time, but even that scenario doesn't require
@@ -127,6 +136,7 @@ function validateObject<Type>(
 }
 
 /**
+ * Convenience function. Used when simplifying to resultIsError is undesirable (@see makeListChecker).
  * @param tuple Object entry tuple, [key, error]:
  * - tuple[0] - string: the object key
  * - tuple[1] - undefined (no errors) | unknown (there were validation errors)

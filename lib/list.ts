@@ -16,7 +16,7 @@
 
 import { validationEntryIsError } from "./object";
 import { resultIsError, Validator } from "./rules";
-import { checkIfObject } from "./simple";
+import { checkIfObject } from "./type-checks";
 
 // TODO add explicit return types to exposed api
 // at least the convenience lib funcs like checkIfObject (so ts has something better than unknown)
@@ -33,18 +33,18 @@ type ErrorsInList = Record<number, unknown>;
  *
  * Example - set up type validators to use at runtime:
  * ```ts
- * const validateCart = createListChecker(validateCartItem);
- * const validateDynamicList = createListChecker(or(checkIfString, checkIfNumber, customCheck));
- * const checkBoundedValues = createListChecker(and(checkIfNumber, (item, index, list) => {
+ * const validateCart = makeListChecker(validateCartItem);
+ * const validateDynamicList = makeListChecker(or(checkIfString, checkIfNumber, customCheck));
+ * const checkBoundedValues = makeListChecker(and(checkIfNumber, (item, index, list) => {
  *    if (item > list.length) return `exceeds limit ${list.length}`
  *    if (item < index) return `lower than limit ${index}`
  * }));
  * ```
- * Often used with @see createObjectValidator to validate list/array fields
+ * Often used with @see makeObjectChecker to validate list/array fields
  * @param validator
- * @returns `undefined` if no errors. Else, object [key, value] -> [index of erroneous element, error from validator]
+ * @returns `undefined` if no errors. Else, an object where [key, value] -> [index of erroneous element, error from validator]
  */
-export function createListChecker<Type>(validator: Validator<Type>) {
+export function makeListChecker<Type>(validator: Validator<Type>) {
   return (list: Type[]) => checkList(validator, list);
 }
 
@@ -66,13 +66,15 @@ export type GenericTuple = [...unknown[]];
 
 /**
  * Returns a tuple validator that:
- * 
+ *
  * TODO document usage
  * @param validators validators for each element in tuple
- * @returns 
+ * @returns
  */
-export function createTupleChecker<TupleType extends GenericTuple>(...validators: Validator[]) {
-  return (tuple: TupleType) => checkTuple(validators,tuple)
+export function makeTupleChecker<TupleType extends GenericTuple>(
+  ...validators: Validator[]
+) {
+  return (tuple: TupleType) => checkTuple(validators, tuple);
 }
 
 function checkTuple<Tuple extends GenericTuple>(
@@ -80,10 +82,13 @@ function checkTuple<Tuple extends GenericTuple>(
   tuple: Tuple
 ) {
   if (checkIfObject(tuple)) return checkIfObject(tuple); // tuples appear as lists, which are objects in javascript
-  if (validators.length !== tuple.length)
+  if (tuple.length !== validators.length)
     return `expected tuple of ${validators.length} elements, got tuple of ${tuple.length}`;
 
-  const results = tuple.map((input, index) => validators[index](input));
+  const results = tuple.map((input, index, entireTuple) => {
+    const itemValidator = validators[index];
+    return itemValidator(input, index, entireTuple);
+  });
   return getErrors(results);
 }
 
@@ -94,10 +99,11 @@ function checkTuple<Tuple extends GenericTuple>(
  */
 function getErrors(results: (unknown | undefined)[]): ErrorsInList {
   if (results.some(resultIsError)) {
+    // Filter last--after creating entries--to preserve indexes
     const errors = Object.entries(results).filter(validationEntryIsError);
     // It would be simpler to return the entire list of results, but
     // it's redundant, verbose, and expensive (ie. larger lists - imagine logging or printing all of that dead/useless data).
-    // Unmapped entries are implicitly valid
+    // Unmapped entries/entries not in this object are implicitly valid
     return Object.fromEntries(errors);
   }
 }

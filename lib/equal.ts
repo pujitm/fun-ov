@@ -28,7 +28,6 @@ function stringify(value) {
 
 /**
  * TODO document
- * TODO rename to `is`?
  *
  * Makes strict equality checker. For primitives only!
  *

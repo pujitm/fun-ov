@@ -14,7 +14,7 @@
 
 /** Test type validation checkers */
 
-import * as Lib from "../../lib/simple";
+import * as Lib from "../../lib/type-checks";
 import { assertError, assertValid } from "../common";
 
 type ValidationResult = "error" | "valid";

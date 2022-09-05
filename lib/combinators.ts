@@ -1,32 +1,6 @@
 import { resultIsError, Validator } from "./rules";
 
-type ErrorMaker<ErrorType = unknown[]> = (
-  results: unknown[],
-  errors: unknown[]
-) => ErrorType;
-
-function makeEagerCombinator(makeError: ErrorMaker) {
-  return (...validators: Validator[]): Validator => {
-    return (...validationParams) => {
-      const results = validators.map((check) => check(...validationParams));
-      const errors = results.filter(resultIsError);
-      return makeError(results, errors);
-    };
-  };
-}
-
-export const EagerAnd = makeEagerCombinator((_, errors) => {
-  if (errors.length > 0) {
-    return errors;
-  }
-});
-
-export const EagerOr = makeEagerCombinator((results, errors) => {
-  if (errors.length === results.length) {
-    // No check succeeded
-    return errors;
-  }
-});
+// ─── Lazy Logic ─────────────────────────────────────────────────────────────────
 
 export function and(...validators: Validator[]): Validator {
   return (...validationParams): unknown => {
@@ -49,7 +23,41 @@ export function or(...validators: Validator[]): Validator {
   };
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
 // deliberately not implementing 'not' for clearer combination logic, clarity over concision
 // technically, logical combinators are fundamentals, and type checks are built on top of them
+//
+// Naming? Capitalization. and vs all, or vs any.
+// ────────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────
+// ─── Eager Logic ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────
 
-// and vs all, or vs any. Capitalization.
+type ErrorMaker<ErrorType = unknown[]> = (
+  results: unknown[],
+  errors: unknown[]
+) => ErrorType;
+
+function makeEagerCombinator(makeError: ErrorMaker) {
+  return (...validators: Validator[]): Validator => {
+    return (...validationParams) => {
+      const results = validators.map((check) => check(...validationParams));
+      // TODO group errors into object (like list checkers) for clarity into which validations failed?
+      const errors = results.filter(resultIsError);
+      return makeError(results, errors);
+    };
+  };
+}
+
+export const EagerAnd = makeEagerCombinator((_, errors) => {
+  if (errors.length > 0) {
+    return errors;
+  }
+});
+
+export const EagerOr = makeEagerCombinator((results, errors) => {
+  if (errors.length === results.length) {
+    // No check succeeded
+    return errors;
+  }
+});

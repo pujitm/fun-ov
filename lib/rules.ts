@@ -23,7 +23,7 @@
  */
 export type Validator<Input = unknown, Error = unknown> = (
   value: Input,
-  ...params // Arbitrary parameters. Usually unused. Useful for co-dependencies/business logic within data structure
+  ...params // Arbitrary parameters. Usually unused. Useful for co-dependencies/business logic within data structures
 ) => undefined | Error;
 
 /**

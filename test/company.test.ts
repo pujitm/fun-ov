@@ -75,4 +75,27 @@ describe("boring company test", () => {
     ];
     coms.map(validateCompany).forEach(assertError);
   });
+  test("invalid but plausible states", () => {
+    const coms = [
+      {
+        name: {},
+        tos_accepted: false,
+      },
+      {
+        name: {
+          display: "pujitm",
+        },
+        bank_account: {},
+        tos_accepted: false,
+      },
+      {
+        name: {
+          display: "pujitm",
+        },
+        bank_account: {},
+        tos_accepted: true,
+      },
+    ] as Company[];
+    coms.map(validateCompany).forEach(assertError);
+  });
 });

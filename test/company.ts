@@ -1,7 +1,7 @@
 import { and } from "../lib/combinators";
 import { is } from "../lib/equal";
-import { createObjectValidator } from "../lib/object";
-import { checkIfBoolean, checkIfString, optional } from "../lib/simple";
+import { makeObjectChecker } from "../lib/object";
+import { checkIfBoolean, checkIfString, optional } from "../lib/type-checks";
 
 export interface Names {
   legal?: string;
@@ -12,7 +12,7 @@ const isNonEmptyString = and(checkIfString, (str: string) => {
   if (str.length === 0) return "cannot be empty";
 });
 
-export const validateNames = createObjectValidator<Names>({
+export const validateNames = makeObjectChecker<Names>({
   display: isNonEmptyString,
   legal: optional(isNonEmptyString),
 });
@@ -24,7 +24,7 @@ export interface BankAccount {
   account_holder_type: "company";
 }
 
-export const validateBankAccount = createObjectValidator<BankAccount>({
+export const validateBankAccount = makeObjectChecker<BankAccount>({
   routing_number: isNonEmptyString,
   account_number: isNonEmptyString,
   account_holder_name: isNonEmptyString,
@@ -40,7 +40,7 @@ export interface Company {
   tos_accepted: boolean;
 }
 
-export const validateCompany = createObjectValidator<Company>({
+export const validateCompany = makeObjectChecker<Company>({
   name: validateNames,
   bank_account: optional(validateBankAccount),
   website: optional(checkIfString),
