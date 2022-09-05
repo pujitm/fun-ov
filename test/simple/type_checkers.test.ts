@@ -77,7 +77,7 @@ const makeErrorCases = (invalidTypes: Object): TestValues => [
  * `error` is list of values that should fail the validation check
  * `valid` is list of values that should pass validation check
  */
-const tests: LibTest = {
+const tests: Omit<LibTest, "optional"> = {
   checkIfUndefined: {
     error: [...definedVals, null, NaN],
     valid: [undefined],
@@ -128,5 +128,17 @@ describe("type validations", () => {
         cases.valid.map(Lib[checkName]).forEach(assertValid);
       });
     });
+  });
+  test("optional check", () => {
+    const checkers = {
+      valid: jest.fn(() => undefined),
+      error: jest.fn(() => "error"),
+    };
+    const pass = Lib.optional(checkers.valid);
+    const fail = Lib.optional(checkers.error);
+
+    [null, undefined, NaN].map(fail).forEach(assertValid); // undefined values pass check regardless of how they would do in the validator
+    assertError(fail("a value")); // defined values are validated
+    assertValid(pass("a value"));
   });
 });

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { and } from "./combinators";
-import { resultIsError } from "./rules";
+import { and, or } from "./combinators";
+import { resultIsError, Validator } from "./rules";
 
 // list, types, logical combos
 // should export checks for all primitive types listed at
@@ -140,3 +140,20 @@ export const checkIfBoolean = makeTypeChecker("boolean");
  * @returns string, if `input` is not of the expected type
  */
 export const checkIfObject = and(checkIfDefined, makeTypeChecker("object")); // checkIfDefined to invalidate null
+/**
+ * TODO (low) document better
+ *
+ * Syntactic sugar for `or(checkIfIllDefined, <your validation func>)`.
+ *
+ * Based on [MDN: Optional Chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+ * ```ts
+ * // Usage Example
+ * const priorityCheck = optional(or(is('high'), is('low')));
+ * [null, undefined, NaN, 'high', 'low'].map(priorityCheck).every(resultIsValid);
+ * ['', {}, 0, 'normal'].map(priorityCheck).every(resultIsError);
+ * ```
+ * @param validator runs if input value is well-defined
+ * @returns
+ */
+export const optional = (validator: Validator) =>
+  or(checkIfIllDefined, validator);
