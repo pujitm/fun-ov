@@ -15,7 +15,7 @@
 /** Test type validation checkers */
 
 import * as Lib from "../../lib/simple";
-import { assertError, assertValid } from "./common";
+import { assertError, assertValid } from "../common";
 
 type ValidationResult = "error" | "valid";
 type TestValues = unknown[];

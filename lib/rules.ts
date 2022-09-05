@@ -22,7 +22,8 @@
  * @returns `undefined` (ie no return value) if valid, or an error if invalid
  */
 export type Validator<Input = unknown, Error = unknown> = (
-  value: Input
+  value: Input,
+  ...params // Arbitrary parameters. Usually unused. Useful for co-dependencies/business logic within data structure
 ) => undefined | Error;
 
 /**

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { and, EagerAnd, EagerOr, or } from "../../lib/combinators";
-import { assertError, assertValid } from "./common";
+import { assertError, assertValid } from "../common";
 
 describe("logical operators", () => {
   const makeMockCheckers = () => ({

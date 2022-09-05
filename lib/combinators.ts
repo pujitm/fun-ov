@@ -52,5 +52,4 @@ export function or(...validators: Validator[]): Validator {
 // deliberately not implementing 'not' for clearer combination logic, clarity over concision
 // technically, logical combinators are fundamentals, and type checks are built on top of them
 
-// TODO implement `optional` -> maybe in another file/module? (optional = or(checkIfUndefined, validator))
 // and vs all, or vs any. Capitalization.

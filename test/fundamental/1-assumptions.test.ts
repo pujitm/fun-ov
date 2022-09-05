@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { assertError, assertValid } from "./common";
+import { assertError, assertValid } from "../common";
 
 describe("assumptions about JS Behavior", () => {
   test("empty values are truthy", () => {

@@ -15,7 +15,7 @@
 /** Test primitive literal equality/identity checkers */
 
 import { is } from "../../lib/equal";
-import { assertError, assertValid } from "./common";
+import { assertError, assertValid } from "../common";
 
 describe("value checker", () => {
   function runTests(tests: Map<unknown, unknown[]>) {
