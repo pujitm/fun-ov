@@ -28,12 +28,20 @@ function stringify(value) {
 
 /**
  * TODO document
+ * TODO rename to `is`?
  *
- * Use for primitives only. For objects/collections, use dedicated makeCheckers.
+ * Makes strict equality checker. For primitives only!
+ *
+ * For objects, collections, and anything incompatible with `===`, use dedicated makeCheckers.
+ * ```ts
+ * // Usage example
+ * const roleIsUser = is('user')
+ * const err = roleIsUser(role) // Any value besides 'user' will fail the validation check
+ * ```
  * @param expected
  * @returns
  */
-export const makeValueChecker = (expected) => (value) =>
+export const is = (expected) => (value) =>
   value === expected
     ? undefined
     : `Expected '${stringify(expected)}', got ${stringify(value)}`;

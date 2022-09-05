@@ -14,7 +14,7 @@
 
 /** Test primitive literal equality/identity checkers */
 
-import { makeValueChecker } from "../../lib/equal";
+import { is } from "../../lib/equal";
 import { assertError, assertValid } from "./common";
 
 describe("value checker", () => {
@@ -22,7 +22,7 @@ describe("value checker", () => {
     for (const [expectedVal, errorCases] of tests.entries()) {
       errorCases.push(NaN, null, undefined);
       test(`${expectedVal} works`, () => {
-        const isExpected = makeValueChecker(expectedVal);
+        const isExpected = is(expectedVal);
         errorCases.forEach((badVal) => assertError(isExpected(badVal)));
         assertValid(isExpected(expectedVal));
       });
