@@ -1,6 +1,6 @@
 # Functional Object Validation for Typescript and Javascipt
 
-Fun-ov makes runtime validation easy, flexible, and maintainable at scale (I hope). It's great for API's and business logic.
+Fun-ov makes runtime validation easy, flexible, and maintainable at scale (I hope). It's great for API's, games, and business logic.
 
 ## Getting Started
 
