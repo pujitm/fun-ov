@@ -1,0 +1,48 @@
+# This is the git-ice config file used for this project
+
+Scopes = []
+
+# The Resolve section matches a resolution strategy for each other config key to negotiate differences in multiple configs
+[Resolve]
+  Types = "merge"
+  Scopes = "replace" # Replace ignores any values provided by lower configs.
+
+[[Types]]
+  Git = "feat"
+  Description = "Add feature or change functionality"
+  Ordinal = 0 # Used to sort commit types in the ice prompt. Ordinance is shared among all configs.
+
+[[Types]]
+  Git = "fix"
+  Description = "Bug fix"
+  Ordinal = 1
+
+[[Types]]
+  Git = "inc"
+  Description = "Incremental work and progress"
+  Ordinal = 2
+
+[[Types]]
+  Git = "test"
+  Description = "Change or update source code tests"
+  Ordinal = 3
+
+[[Types]]
+  Git = "docs"
+  Description = "Change or update documentation"
+  Ordinal = 4
+
+[[Types]]
+  Git = "infra"
+  Description = "Infrastructure to deploy, run, and manage the application"
+  Ordinal = 5
+
+[[Types]]
+  Git = "config"
+  Description = "Configuration for project, repo, or build"
+  Ordinal = 6
+
+[[Types]]
+  Git = "exp"
+  Description = "Experiment with something"
+  Ordinal = 7
