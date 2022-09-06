@@ -1,13 +1,18 @@
 {
   "name": "fun-ov",
   "version": "1.0.0",
-  "description": "",
+  "description": "Flexible and extensible functional object validation",
+  "homepage": "https://github.com/pujitm/fun-ov",
+  "repository": {"type": "git", "url": "https://github.com/pujitm/fun-ov.git"},
   "main": "js/index.js",
   "types": "js/index.d.ts",
+  "engines": {
+		"node": "^12.17.0 || ^14.13 || >=16.0.0"
+	},
   "scripts": {
     "test": "jest",
     "test:debug": "node --inspect node_modules/.bin/jest --runInBand",
-    "prepublish": "npx tsc --build tsconfig.json && rm -r js/test && mv js/lib/* ./js/ && rmdir js/lib"
+    "prepack": "npx tsc --build tsconfig.json && rm -r js/test && mv js/lib/* ./js/ && rmdir js/lib"
   },
   "keywords": [
     "functional",
@@ -17,7 +22,7 @@
     "composable"
   ],
   "author": "Pujit Mehrotra",
-  "license": "ISC",
+  "license": "MIT",
   "files": [
     "js"
   ],
