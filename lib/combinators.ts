@@ -42,7 +42,7 @@ function makeEagerCombinator(makeError: ErrorMaker) {
   return (...validators: Validator[]): Validator => {
     return (...validationParams) => {
       const results = validators.map((check) => check(...validationParams));
-      // TODO group errors into object (like list checkers) for clarity into which validations failed?
+      // TODO preserve error indexes/group errors into object (like list checkers) for clarity into which validations failed?
       const errors = results.filter(resultIsError);
       return makeError(results, errors);
     };

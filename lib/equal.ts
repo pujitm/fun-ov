@@ -26,9 +26,8 @@ function stringify(value) {
   return `${value}`;
 }
 
+// TODO document better
 /**
- * TODO document
- *
  * Makes strict equality checker. For primitives only!
  *
  * For objects, collections, and anything incompatible with `===`, use dedicated makeCheckers.

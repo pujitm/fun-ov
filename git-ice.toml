@@ -1,5 +1,4 @@
-# This is the ice config file used for this project
-# Feel free to use it as a starting point
+# This is the git-ice config file used for this project
 
 Scopes = []
 
